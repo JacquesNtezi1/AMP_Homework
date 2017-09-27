@@ -33,6 +33,10 @@ library(gridExtra)
 library(pwr)
 library(rmarkdown)
 library(car)
+library(knitr)
+library(doBy)
+library(rcompanion)
+
 # define function that turns decimal percentages into pretty formats
 format_pct <- function(num) {round(num*100, digits = 2)}
 
@@ -49,7 +53,7 @@ html_table_width <- function(kable_output, width){
 
 ## Overview 
 
-For profitable production, Beans and Maize require adequate fertilizer application. Applying the right fertilizer at the right rate and at the right time is crucial for a successful crop. The aim of this report is  to determine which type  of fertilizer could lead to the highest Yield  for Maize and/or Beans in the Bugarama region. Maize and Beans Fertilizer application field experiment was carried out on 1000 farmers (i.e 500 farmers for each grade ofe fertilizer).
+For profitable production, Beans and Maize require adequate fertilizer application. Applying the right fertilizer at the right rate and at the right time is crucial for a successful crop. The aim of this report is  to determine which type  of fertilizer could lead to the highest Yield  for Maize and/or Beans in the Bugarama region. Maize and Beans Fertilizer application field experiment was carried out on 1000 farmers (i.e 500 farmers for each grade of fertilizer).
 
 # Trial Hypothesis 
 
@@ -61,32 +65,54 @@ H2:The type B fertilizer  will produce significantly higher Beans yields than ty
 
 ## Summary of Results 
 
-*H1:Did Fertilzer B produce significance high Maize yields than FertilizerA? * Results have shown that Fertilizer B *(mean=773kg/acre, median=762.7kg/acre , 1st.Q-3rd.Q =[564.4-961])* had statistically significant  higher Maize yields than Fertilizer A *(mean=698.6kg/acre, median=700kg/acre , 1st.Q-3rd.Q =[500-900])*.Also  with power calculation , the findings have shown that the sample size used for this study was appropriete at 98% certainly to make correct inference that the sample groups of data are different. 
+```{r table-simple, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
 
-*H2: Did Fertilizer B produce significance high Beans yields than Fertilizer A ?* Results  revealed that there is no difference in the mean yields of beans  between fertilizer A *(mean=98.9kg/acre , CI=[97.1-101])* and 
-B *(mean=101kg/acre , CI=[98.9-102])* . This study may be was underpowered (few participants) to detect a difference of the specified effect size. 
+library(pander)
+panderOptions('table.split.table', Inf)
+set.caption("
+            * H1:Did Fertilzer B produce significance high Maize yields(kg/acre) than Fertilizer A?                                    
+            * H2: Did Fertilizer B produce significance high Beans yields (kg/acre) than Fertilizer A?")
+
+my.data <- " Results Table
+
+Crops	  |Type   |Means|Median|Stand.Dev|1st-3rd.Quartiles|Power|Test         |Significance
+--------|-------|-----|------|---------|-----------------|-----|------------ |----------------
+Maize 	|Fert.A |  699|   700|         |  500-900	       |99%	 |Wilcoxon test|Significant 
+	      |Fert.B	|  773|   763|         |  564-961	       |	   |             |
+--------|-------|------------|---------|-----------------|-----|------------ |----------------     
+Beans 	|Fert.A |   99|      |     20.5|                 |11%	 |Welch test   |Not Significant  
+	      |Fert.B	|  101|      |     19.8|	               |     |             |          
+--------|-------|------------|---------|-----------------|-----|------------ |----------------"
+df <- read.delim(textConnection(my.data),header=FALSE,sep="|",strip.white=TRUE,stringsAsFactors=FALSE)
+names(df) <- unname(as.list(df[1,])) # put headers on
+pander(df, style = 'rmarkdown')
+
+```
+
++ Results have shown that Fertilizer B had statistically significant higher Maize yields than Fertilizer A .Also  with power calculation ,the findings have shown that the sample size used for this study was appropriate at 98% certainly to make correct inference that the sample groups of data are different .
+
++ While the Beans results revealed that there is no difference in the mean yields of beans between fertilizer A and B .These findings are not reliable because of low statistical power of 0.106 . It means that the chance of discovering  effects that are genuinely true is low .
 
 ## Data Quality Disclaimer
 
-For the beans yield , we used  statistical outlier detection (Standard Deviation) to detect outliers but we did not consider to eliminate those points from the data . But we did run the analysis with and without it to se how the results change. 
+For the beans yield, box-plot revealed some information on the strange data points that there're large numbers of kgs that max out near 160 for both fertilizer types and also has some outlier points at the low end. However, we did not consider to eliminate those points from the data because they were quite close to the boxplot lines, this means they might not actually be outliers. In addition, there were no further verification done in relation to the quality, operability or accuracy of the data.
 
+# Recommendation 
 
-# Recommadation 
+* We therefore conclude that we should recommend to farmers that they adopt Fertilizer B over Fertilizer A for Maize due to higher significance production . 
 
-.	We therefore conclude that we should recommend to farmers that they adopt Fertilizer B  over Fertilizer A for Maize. 
+* For Beans crop, fertilizer B had yield(kgs/acre) which were much higher than the Fertilizer A yield(kgs/acre), but the results were not statistically significant; this is the reason why no types of fertilizer is highlighted for that crop. Also, it doesn't make sense to use the same sample size for both Beans and Maize to detect the same effect since they do not have the same capacity of nutrient fixation. 
 
-.	For Beans crop , fertilizer B  had yields which were much higher than the Fertilizer A yield, but the results were not statistically significant (due to low sample size); this is the reason why no types of fertilizer is highlighted for that crop.Also , it doesn't make sense to use the same sample size for both Beans and Maize to detect the same effect since they do not have the same capacity of nutrient fixation . 
+* We ought to re-do Beans fertilizer trial due to low power. Given this risk, this study demonstrated no difference between two fertilizers. So, we can't be confident in concluding that no difference exists.
 
-.	We ought to re-do  Beans fertilizer trial but consider to to increase the sample size . Given this risk, it is not acceptable to conclude that fertilizing beans has no impact when the sample size used for the research was not sufficient to detect a meaningful difference between the fertilizer type A and B.
-
-.In meanwhile ,we also recommend the researcher to run ex-ante power calculation to  determine the minimum sample size required to meet power level and minimum detectable effect set for the study.
+* Finally, we also recommend the researcher to run power analysis to determine the minimum sample size required to meet power level and minimum detectable effect set for the study.
 
 # Analysis 
 
 ```{r assignment}
 # create directory 
 
-wd <- "C:/Users/Admin/Desktop/r_directory/AInnovations/Analyst Mentorship Program/AMP"
+wd <- "C:/Users/Admin/Desktop/r_directory/AInnovations/AMP"
 dd <- paste(wd, "data", sep="/")
 od <- paste(wd, "output", sep="/")
 
@@ -179,7 +205,7 @@ shapiro.test(c2$Beans.yield.per.acre)
 
 ```
 
-Our Maize yields distribution has a Shapiro test P-value <5%  for all  Fertilizer types A&B tested separately and when tested both together. This is strongly suggests  that our Maize data is non- normal. While  Beans yields data,  Shapiro test P-Values > 5%  this indicates that data are normal. 
+Our Maize yields distribution has a Shapiro test P-value < 1%  for all  Fertilizer types A&B tested separately and when tested both together. This is strongly suggests  that our Maize data is non- normal. While  Beans yields data,  Shapiro test P-Values > 1%  this indicates that data are normal. 
 
 ## Test of Significance 
 
@@ -193,13 +219,9 @@ Since the results from Shapiro test suggests the normality for Beans Data and no
 ## Welch Test 
 t.test(Beans.yield.per.acre~Group, alternative = "two.sided", var.equal = FALSE, data=c)$p.value #perform the Welch test and store p-value
 
-## Let us verify results using T test 
-
-t.test(Beans.yield.per.acre~Group, alternative = "two.sided", var.equal = TRUE, data=c)$p.value # We have gotten similar result because the variance is almost the same
- 
 ```
 
-No siginficance difference mean yield found  between two types of fertilizer applied to Beans ( Welch Test p-values>5%)
+No significance difference mean yield found  between two types of fertilizer applied to Beans ( Welch Test p-values>5%)
 
 ### Wilcoxon Test  for  Maize Yield Data
 
@@ -209,16 +231,13 @@ No siginficance difference mean yield found  between two types of fertilizer app
 
 wilcox.test(Maize.yield.per.acre~Group,paired=FALSE, correct=TRUE,data=c)
 
-## let us verify results using T.test
-t.test(Maize.yield.per.acre~Group, alternative = "two.sided", var.equal = TRUE, data=c) # has produce significance which should not be always promises , we must  use the right test at the right time. 
-
 ```
 
 We found a statistically  significance  mean yield difference between two types of fertilizer applied to Maize ( Wilcoxon Test p-values<5%)
 
 ## Power Analysis  
 
-Our results have shown no difference in mean yield for Beans among  Fertilizer A and B ( Welch test P-values=0.165 > 5%)  and found to have statistically significant difference for Maize (Wilcoxon Test p-value = 4.565e-05 <5%) . However , there is a need of performing  power calculations to assess whether the presence  or lack of impact difference is due to the sample size, inherent to the intervention itself, or due to some other reason such as implementation failure or something else. 
+Our results have shown no difference in mean yield for Beans among  Fertilizer A and B ( Welch test P-values=0.165 > 5%)  and found to have statistically significant difference for Maize (Wilcoxon Test p-value = 4.565e-05 <5%) . However , there is a need of performing  power calculations to know whether our findings are reliable or not. 
 
 ### Power calculation 
 
@@ -252,7 +271,7 @@ pwr.2p2n.test(h = vals$effectsi , n1 =length(c1$Group), n2=length(c2$Group) , si
 
 ```
 
-With the result calculated above , a statistical power of 0.106 was obtained , which means a weak power . Therefore ,it can be said with only 11% of certainly that there is no really a statistically significant difference between the beans'mean yields for two types of fertilizers . so we we can conclude that the sample size used was inappropriate for detecting whether meaningful effects have occurred or not. Given this risk, it is not acceptable to conclude that an intervention has not impact when the sample size used for the research is not sufficient to detect a meaningful difference between two types of fertilizer.
+With the result calculated above , a low statistical power of 0.106 was obtained , means that the chance of discovering effects that are genuinely true is low . Therefore ,it can be said with only 11% of certainly that there is no really a statistically significant difference between the beans'mean yields for two types of fertilizers and these finding are unreliable. 
 
 #### Power calculation  for Non-normal ( Maize Yield )
 
@@ -273,108 +292,26 @@ MCpower = function(sample1, sample2, size) {
 
 ```
 
-With the result calculated above , a statistical power of 0.979 was obtained , which means a high power . Therefore ,it can be said that we are confident at 98% certainly that there is a statistically significant difference between the Maize'mean yields between two types of fertilizers . 
-
-# Follow up with Outlier for Beans Data 
-
-## Run Outlier Check, QQ-plots and shapiro Test 
-
-Since our beans data has shown the outlier data points data, it is crucial to run again results to see if the outliers had any influential on the results .
-
-```{r outlier}
-
-## run outliers check function and detect it 
-
-outlier.check <- function(x) {
-  
-  name <- ifelse(x < (mean(x, na.rm=T)-(2*sd(x, na.rm=T))) | 
-                   x > (mean(x, na.rm=T) + (2*sd(x, na.rm=T))), 1, 0)
-  
-  return(name)
-}
-
-c$Beans_yield.check <- outlier.check(c$Beans.yield.per.acre)
-
-## check again normality by considering outliers removal 
-
-##subset data without outliers 
-
-c0 <- subset(c,Beans_yield.check==0, select=ID:Beans_yield.check) ## all database without outliers 
-c3 <- subset(c0,Group=="Fert.A", select=ID:Beans_yield.check)     ## database for Fert A  without outliers  
-c4 <- subset(c0,Group=="Fert.B", select=ID:Beans_yield.check)     ## database for Fert B  without outliers
-##
-### qq-plots beans data with out outliers
-par(mfrow = c(1,3))
-qqnorm(c0$Beans.yield.per.acre, main="QQ plot Beans Yield  ")
-qqline(c0$Beans.yield.per.acre)
-
-qqnorm(c3$Beans.yield.per.acre, main="QQ plot Beans Yield  Fert.A")
-qqline(c3$Beans.yield.per.acre)
-
-qqnorm(c4$Beans.yield.per.acre, main="QQ plot Beans Yield  Fert.B")
-qqline(c4$Beans.yield.per.acre)
-
-## Run Shapiro test for data with out outliers 
-
-shapiro.test(c0$Beans.yield.per.acre)
-shapiro.test(c3$Beans.yield.per.acre)
-shapiro.test(c4$Beans.yield.per.acre)
-
-
-```
-
-Huu, very interesting !!!. Those are some terrible when you look only on your data without taking into the oultiers . Some reality  now start to happening .Before ,  shapiro test had shown us that data is normal , then the results have shown non -normal trend after removing outliers *shapiro test p-values <5%* which suggests us to use non parametric test .
-
-## Run Wilcoxon Test and Power Calculation 
-
-```{r nonnormal2}
-
-## wicoxon test 
-
-wilcox.test(Beans.yield.per.acre~Group,paired=FALSE, correct=TRUE,data=c0)
-
-## MCpower  
-
-MCpower = function(sample1, sample2, size) {
-  reps = 1000
-    results  <- sapply(1:reps, function(r) {
-        resample1 <- sample(sample1, size=size, replace=TRUE) 
-        resample2 <- sample(sample2, size=size, replace=TRUE) 
-        test <- wilcox.test(resample1, resample2, alternative="two.sided",paired=FALSE, correct=TRUE)
-        test$p.value
-    })
-    sum(results<0.05)/reps
-}
-
- MCpower(c3$Beans.yield.per.acre, c4$Beans.yield.per.acre, 500)  ## number of database are not equal 
-
-```
-
-Now , we can conclude that there is no significance difference but sample size used for the research was not sufficient to detect a meaningful difference between two types of fertilizer. 
-
-# Homework
-
-*With Beans data , What is an optimal sample size required to detect minimum detectable effect (MDE) of interest since we know that having a sample size smaller than statistically required increases the likelihood of researchers concluding that the evaluated intervention has no impact when the intervention does  Also for cost efficiency and value-for-money it is important to ensure that an evaluation research design does not use a larger sample size than is required to detect the minimum detectable effect (MDE) of interest*
-
 # Summary Stats  for Reporting 
 
-```{r summary }
+```{r summary2 }
 
-## for normal data , report means and confidence Interval  
-library(rcompanion)
+## for normal data , report means ,sd,confidence Interval 
 
-groupwiseMean(Beans.yield.per.acre ~ Group, 
-              data   = c, 
-              conf   = 0.95, 
-              digits = 3)
-
+table_s <- summaryBy(Beans.yield.per.acre~Group,data=c,FUN=c(mean,sd))
+kable(table_s, format="markdown", align="c", digits=2)
 ## for Non normal data ,report Median and ( 1st and 3rd quartiles) 
 
 setnames(c, old = c('Maize.yield.per.acre'),new = c('MaizeYield')) ## keep variable name short
+tab <- summaryBy(MaizeYield~Group,data=c,FUN=summary)
+sum_table <- as.data.frame(tab)
+names(sum_table) <- c("Fertilizer type", "Min", "1st.Q", "Median","Mean" ,"3rd.Q","MAX")
+kable(sum_table, format="markdown", align="c", digits=2)
 
-aggregate(MaizeYield ~ Group, data = c, summary)
 
 ```
+
+
 
 
 
